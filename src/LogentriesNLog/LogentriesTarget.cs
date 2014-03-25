@@ -89,6 +89,11 @@ namespace NLog.Targets
             logentriesAsync.AddLine(renderedEvent);
         }
 
+        protected override void FlushAsync(AsyncContinuation asyncContinuation)
+        {
+            logentriesAsync.FlushAsync(() => asyncContinuation(null));
+        }
+
         protected override void CloseTarget()
         {
             base.CloseTarget();

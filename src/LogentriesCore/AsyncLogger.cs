@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
-
+using System.Threading.Tasks;
 #if !NET4_0
 using System.Text.RegularExpressions;
 #endif
@@ -458,6 +458,18 @@ namespace LogentriesCore.Net
                 if (!Queue.TryAdd(trimmedEvent))
                     WriteDebugMessages(QueueOverflowMessage);
             }
+        }
+
+        public void FlushAsync(Action asyncContinuation)
+        {
+            Task.Factory.StartNew(() =>
+            {
+                while (Queue.Count > 0)
+                {
+                    Thread.Sleep(100);
+                }
+                asyncContinuation();
+            });
         }
 
         public void interruptWorker()
