@@ -196,9 +196,11 @@ namespace LogentriesCore.Net
         protected readonly BlockingCollection<string> Queue;
         protected readonly Thread WorkerThread;
         protected readonly Random Random = new Random();
-
+        
         private LeClient LeClient = null;
         protected bool IsRunning = false;
+        protected volatile bool IsFlushing = false;
+        protected volatile bool IsFlushCompleted = false;
 
         #region Protected methods
 
@@ -212,6 +214,13 @@ namespace LogentriesCore.Net
                 // Send data in queue.
                 while (true)
                 {
+                    if (IsFlushing && Queue.Count == 0)
+                    {
+                        IsFlushing = false;
+                        LeClient.Flush();
+                        IsFlushCompleted = true;
+                    }
+
                     // Take data from queue.
                     var line = Queue.Take();
 
@@ -464,7 +473,9 @@ namespace LogentriesCore.Net
         {
             Task.Factory.StartNew(() =>
             {
-                while (Queue.Count > 0)
+                IsFlushCompleted = false;
+                IsFlushing = true;
+                while (!IsFlushCompleted)
                 {
                     Thread.Sleep(100);
                 }
