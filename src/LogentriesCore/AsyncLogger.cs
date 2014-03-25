@@ -222,7 +222,9 @@ namespace LogentriesCore.Net
                     }
 
                     // Take data from queue.
-                    var line = Queue.Take();
+                    string line;
+                    if (!Queue.TryTake(out line, 1000))
+                        continue;
 
                     // Replace newline chars with line separator to format multi-line events nicely.
                     foreach (String newline in posix_newline)
